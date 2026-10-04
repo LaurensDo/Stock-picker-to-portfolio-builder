@@ -4,8 +4,9 @@
 Holt Tageskurse ueber die oeffentliche Yahoo-Finance-Chart-API und berechnet
 Trend-/Momentum-Kennzahlen. Nutzung:
 
-  python3 market.py quote SYMBOL [SYMBOL ...]        # Kurzuebersicht
-  python3 market.py screen [--universe default]      # Momentum-Ranking
+  python3 market.py pos SYMBOL [SYMBOL ...]          # kompakt: Kurs, Hoch/Tief, SMA, ATR
+  python3 market.py quote SYMBOL [SYMBOL ...]        # Tabelle mit Renditen
+  python3 market.py screen [--full]                  # Makro + Top-Momentum + grosse Bewegungen
   python3 market.py json SYMBOL [SYMBOL ...] > x.json
 """
 import json, sys, time, math
@@ -16,14 +17,14 @@ UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.3
 HOSTS = ["query2.finance.yahoo.com", "query1.finance.yahoo.com"]
 
 UNIVERSE = {
-    "Indizes & Makro": "^GSPC ^NDX ^GDAXI ^STOXX50E ^N225 ^HSI 000001.SS ^NSEI WIG20.WA ^VIX ^TNX DX-Y.NYB EURUSD=X",
+    "Indizes & Makro": "^GSPC ^NDX ^GDAXI ^STOXX50E ^N225 ^HSI 000001.SS ^NSEI ^VIX ^TNX DX-Y.NYB EURUSD=X",
     "Rohstoffe & Krypto": "GC=F SI=F HG=F PL=F PA=F CL=F BZ=F NG=F ZW=F KC=F CC=F BTC-USD ETH-USD",
     "Themen-ETFs": "SMH ITA GDX GDXJ COPX URA URNM LIT REMX TAN XBI IBIT XLE XLU XLF XLV XLI XLK XLP EPOL INDA EEM KWEB",
     "US Tech": "AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO ORCL AMD TSM ASML NFLX PLTR CRM NOW ADBE INTC MU QCOM ANET ARM DELL IBM CSCO UBER SHOP COIN HOOD MSTR APP CRWD PANW NET SNOW",
     "US Finanzen & Konsum": "JPM GS MS BAC V MA AXP BRK-B WMT COST HD MCD NKE SBUX KO PG",
-    "US Gesundheit": "LLY NVO UNH JNJ ABBV MRK PFE ISRG VRTX AMGN HIMS CYBN",
-    "US Industrie, Energie, Rohstoffe": "GE GEV CAT DE LMT RTX NOC GD BA ETN VRT PWR HON XOM CVX OXY SLB VST CEG NRG CCJ OKLO SMR NEE FCX NEM AEM GOLD SCCO MP ALB RIO BHP VALE",
-    "Europa": "SAP.DE SIE.DE ALV.DE DTE.DE MUV2.DE RHM.DE HAG.DE R3NK.DE MTX.DE ENR.DE IFX.DE BAS.DE BAYN.DE VOW3.DE MBG.DE BMW.DE DBK.DE CBK.DE ADS.DE ZAL.DE AIR.PA SAF.PA MC.PA RMS.PA OR.PA TTE.PA SU.PA ASML.AS NOVO-B.CO NOVN.SW ROG.SW NESN.SW UBSG.SW SHEL.L AZN.L RR.L BA.L LDO.MI UCG.MI ISP.MI SAN.MC IBE.MC ITX.MC",
+    "US Gesundheit": "LLY NVO UNH JNJ ABBV MRK PFE ISRG VRTX AMGN HIMS HELP",
+    "US Industrie, Energie, Rohstoffe": "GE GEV CAT DE LMT RTX NOC GD BA ETN VRT PWR HON XOM CVX OXY SLB VST CEG NRG CCJ OKLO SMR NEE FCX NEM AEM SCCO MP ALB RIO BHP VALE",
+    "Europa": "SAP.DE SIE.DE ALV.DE DTE.DE MUV2.DE RHM.DE HAG.DE R3NK.DE MTX.DE ENR.DE IFX.DE BAS.DE BAYN.DE VOW3.DE MBG.DE BMW.DE DBK.DE CBK.DE ADS.DE ZAL.DE AIR.PA SAF.PA MC.PA RMS.PA OR.PA TTE.PA SU.PA ASML.AS NOVO-B.CO NOVN.SW NESN.SW UBSG.SW SHEL.L AZN.L RR.L BA.L LDO.MI UCG.MI ISP.MI SAN.MC IBE.MC ITX.MC",
     "Asien": "0700.HK 9988.HK 3690.HK 1810.HK 1211.HK 7203.T 6758.T 8035.T 005930.KS 000660.KS INFY RELIANCE.NS",
 }
 
@@ -104,23 +105,41 @@ def momentum_score(r):
     return sum(parts) / 3 / max(r["vol3m"] or 30, 15) * 30
 
 
+def pos(rows):
+    r2 = lambda v: f"{v:.2f}" if isinstance(v, (int, float)) else "-"
+    r1 = lambda v: f"{v:+.1f}" if isinstance(v, (int, float)) else "-"
+    print("Symbol | Kurs Whg | 1T% | 5T% | 3M% | Hoch | Tief | SMA50 | SMA200 | ATR | v.Hoch% | Datum")
+    for r in rows:
+        atr = r["atr_pct"] * r["last"] / 100 if r["atr_pct"] else None
+        print(" | ".join([r["symbol"], f"{r2(r['last'])} {r['currency']}", r1(r["d1"]), r1(r["d5"]), r1(r["m3"]),
+                          r2(r["day_high"]), r2(r["day_low"]), r2(r["sma50"]), r2(r["sma200"]), r2(atr),
+                          r1(r["from_high"]), r["date"]]))
+
+
 if __name__ == "__main__":
     cmd, args = (sys.argv[1], sys.argv[2:]) if len(sys.argv) > 1 else ("screen", [])
-    if cmd == "quote":
+    if cmd == "pos":
+        pos(collect(args))
+    elif cmd == "quote":
         table(collect(args))
     elif cmd == "json":
         print(json.dumps(collect(args), indent=1))
     elif cmd == "screen":
-        groups = args or list(UNIVERSE)
+        full = "--full" in args
         allrows = []
-        for g in groups:
+        for g in UNIVERSE:
             rows = collect(UNIVERSE[g].split())
-            print(f"\n### {g}")
-            table(rows)
+            if full or g in ("Indizes & Makro", "Rohstoffe & Krypto"):
+                print(f"\n### {g}")
+                table(rows)
             allrows += rows
         trend = [r for r in allrows if (r["vs_sma200"] or -1) > 0 and (r["vs_sma50"] or -1) > 0 and not r["symbol"].startswith("^")]
         trend.sort(key=momentum_score, reverse=True)
         print("\n### Top-Momentum (ueber SMA50 und SMA200, risikoadjustiert)")
-        table(trend[:30])
+        table(trend[:20])
+        movers = sorted([r for r in allrows if r["d1"] is not None and abs(r["d1"]) >= 4], key=lambda r: -abs(r["d1"]))
+        if movers:
+            print("\n### Grosse Tagesbewegungen (mind. 4 %)")
+            table(movers[:15])
         with open("screen_latest.json", "w") as f:
             json.dump(allrows, f)
