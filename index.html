@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Depot-Pilot</title>
+<meta name="description" content="Startseite für das Depot-Pilot-Dashboard">
+<meta name="theme-color" content="#1c4fd6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Depot-Pilot">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<style>
+  :root { --bg:#edf0f3; --surface:#fff; --ink:#111923; --muted:#5b6776; --line:#d8dee5; --accent:#1c4fd6; --accent-ink:#fff; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg:#0d1116; --surface:#151b23; --ink:#e7ecf2; --muted:#9aa6b5; --line:#2a333f; --accent:#7ea3ff; --accent-ink:#0d1116; }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body { background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         display: grid; place-items: center; min-height: 100vh; padding: 24px 16px; }
+  main { width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 28px 24px; text-align: center; }
+  img { width: 72px; height: 72px; border-radius: 16px; display: block; margin: 0 auto 16px; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  p { margin: 0 0 20px; color: var(--muted); }
+  a.go { display: block; background: var(--accent); color: var(--accent-ink); text-decoration: none; font-weight: 600;
+         padding: 14px 16px; border-radius: 12px; }
+  details { margin-top: 20px; text-align: left; color: var(--muted); font-size: .92rem; }
+  summary { cursor: pointer; color: var(--ink); font-weight: 600; }
+  li { margin: 6px 0; }
+  .note { margin-top: 16px; font-size: .85rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <img src="icon-192.png" alt="">
+  <h1>Depot-Pilot</h1>
+  <p>Dein Dashboard für Pilot und Depot.</p>
+  <a class="go" id="go" href="https://claude.ai/artifact/Y9LLgwe2aaXv3f6vRcxXfe">Dashboard öffnen</a>
+  <details>
+    <summary>Als App auf den Home-Bildschirm</summary>
+    <ul>
+      <li><b>iPhone (Safari):</b> Teilen-Symbol → „Zum Home-Bildschirm“.</li>
+      <li><b>Android (Chrome):</b> Menü ⋮ → „App installieren“ oder „Zum Startbildschirm hinzufügen“.</li>
+    </ul>
+    <p class="note">Danach öffnet das Symbol direkt das Dashboard. Du musst dafür in claude.ai angemeldet sein.</p>
+  </details>
+</main>
+<script>
+  // Als installierte App direkt zum Dashboard weiterleiten; im Browser die Startseite zeigen.
+  var target = document.getElementById("go").href;
+  var standalone = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true;
+  if (standalone) location.replace(target);
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function () {});
+</script>
+</body>
+</html>
