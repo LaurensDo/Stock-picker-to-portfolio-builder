@@ -5,14 +5,51 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Depot-Pilot</title>
 <meta name="theme-color" content="#1c4fd6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Depot-Pilot">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<meta http-equiv="refresh" content="0; url=https://claude.ai/artifact/Y9LLgwe2aaXv3f6vRcxXfe">
-<script>location.replace("https://claude.ai/artifact/Y9LLgwe2aaXv3f6vRcxXfe");</script>
-<style>body{margin:0;background:#1c4fd6;color:#fff;font:16px system-ui,sans-serif;display:grid;place-items:center;min-height:100vh}a{color:#fff}</style>
+<script>
+// Normaler Link und installierte App: sofort zum Dashboard. Nur mit ?install bleibt die Einrichtungsseite stehen.
+(function () {
+  var target = "https://claude.ai/artifact/Y9LLgwe2aaXv3f6vRcxXfe";
+  var standalone = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true;
+  var setup = /(^|[?&#])install(\b|=|&|$)/.test(location.search + location.hash);
+  if (standalone || !setup) { location.replace(target); return; }
+  document.documentElement.className = "setup";
+})();
+</script>
+<noscript><meta http-equiv="refresh" content="0; url=https://claude.ai/artifact/Y9LLgwe2aaXv3f6vRcxXfe"></noscript>
+<style>
+  :root { --bg:#edf0f3; --surface:#fff; --ink:#111923; --muted:#5b6776; --line:#d8dee5; --accent:#1c4fd6; --accent-ink:#fff; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0d1116; --surface:#151b23; --ink:#e7ecf2; --muted:#9aa6b5; --line:#2a333f; --accent:#7ea3ff; --accent-ink:#0d1116; } }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body { visibility: hidden; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         display: grid; place-items: center; min-height: 100vh; padding: 24px 16px; }
+  .setup body { visibility: visible; }
+  main { width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 28px 24px; text-align: center; }
+  img { width: 96px; height: 96px; border-radius: 22px; display: block; margin: 0 auto 16px; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  p { margin: 0 0 20px; color: var(--muted); }
+  a.go { display: block; background: var(--accent); color: var(--accent-ink); text-decoration: none; font-weight: 600; padding: 14px 16px; border-radius: 12px; }
+  ol { text-align: left; color: var(--muted); font-size: .95rem; padding-left: 1.2rem; margin: 20px 0 0; }
+  li { margin: 6px 0; }
+</style>
 </head>
 <body>
-<a href="https://claude.ai/artifact/Y9LLgwe2aaXv3f6vRcxXfe">Weiter zum Dashboard</a>
+<main>
+  <img src="icon-512.png" alt="">
+  <h1>Depot-Pilot</h1>
+  <p>Einmalig als App einrichten</p>
+  <a class="go" href="https://claude.ai/artifact/Y9LLgwe2aaXv3f6vRcxXfe">Dashboard öffnen</a>
+  <ol>
+    <li><b>iPhone (Safari):</b> Teilen-Symbol → „Zum Home-Bildschirm“.</li>
+    <li><b>Android (Chrome):</b> Menü ⋮ → „App installieren“ oder „Zum Startbildschirm hinzufügen“.</li>
+    <li>Danach öffnet das Symbol direkt das Dashboard.</li>
+  </ol>
+</main>
 </body>
 </html>
