@@ -116,12 +116,26 @@ def pos(rows):
                           r1(r["from_high"]), r["date"]]))
 
 
+def closes(n, symbols):
+    """Schlusskurse der letzten n Handelstage je Symbol mit echtem Datum (Lücken und veraltete Daten sichtbar)."""
+    for sym in symbols:
+        try:
+            d = fetch(sym)
+            pairs = list(zip(d["t"], d["close"]))[-n:]
+            print(sym, "|", " ".join(f"{time.strftime('%Y-%m-%d', time.gmtime(t))}:{c:.4f}" for t, c in pairs))
+        except Exception as e:  # noqa: BLE001
+            print(sym, "| Fehler:", e, file=sys.stderr)
+        time.sleep(0.25)
+
+
 if __name__ == "__main__":
     cmd, args = (sys.argv[1], sys.argv[2:]) if len(sys.argv) > 1 else ("screen", [])
     if cmd == "pos":
         pos(collect(args))
     elif cmd == "quote":
         table(collect(args))
+    elif cmd == "closes":
+        closes(int(args[0]), args[1:])
     elif cmd == "json":
         print(json.dumps(collect(args), indent=1))
     elif cmd == "screen":
