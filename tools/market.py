@@ -121,8 +121,12 @@ def closes(n, symbols):
     for sym in symbols:
         try:
             d = fetch(sym)
-            pairs = list(zip(d["t"], d["close"]))[-n:]
-            print(sym, "|", " ".join(f"{time.strftime('%Y-%m-%d', time.gmtime(t))}:{c:.4f}" for t, c in pairs))
+            pairs = [(time.strftime('%Y-%m-%d', time.gmtime(t)), f"{c:.4f}") for t, c in list(zip(d["t"], d["close"]))[-n:]]
+            m = d["meta"]  # fehlt der letzte Tagesschluss noch, den letzten Kurs aus der Kursmeldung anhängen (mit *)
+            mt, mp = m.get("regularMarketTime"), m.get("regularMarketPrice")
+            if mt and mp and (not pairs or time.strftime('%Y-%m-%d', time.gmtime(mt)) > pairs[-1][0]):
+                pairs.append((time.strftime('%Y-%m-%d', time.gmtime(mt)), f"{mp:.4f}*"))
+            print(sym, "|", " ".join(f"{dt}:{c}" for dt, c in pairs))
         except Exception as e:  # noqa: BLE001
             print(sym, "| Fehler:", e, file=sys.stderr)
         time.sleep(0.25)
